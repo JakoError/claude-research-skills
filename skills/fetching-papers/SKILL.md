@@ -37,6 +37,8 @@ digraph fetch {
   "papers/<ID>/ exists?" -> "Download PDF" [label="no"];
   "Download PDF" -> "Parse with mineru";
   "Parse with mineru" -> "Verify output";
+  "Verify output" -> "Update .gitignore";
+  "Update .gitignore" -> "Append to PAPERS.md";
 }
 ```
 
@@ -117,17 +119,98 @@ Run `mineru --help` for the full list.
 - List the output dir so the user sees what was produced.
 - Never claim success without opening the markdown.
 
+## Step 7 — Manage .gitignore (if inside a git repo)
+
+mineru outputs (PDFs, extracted figures, layout debug PDFs, JSON content dumps) are large and binary. They must not be committed.
+
+1. Detect git: check for a `.git/` directory at or above the project root (e.g., `git rev-parse --show-toplevel`). If not a git repo, skip this step.
+2. Ensure `.gitignore` at the repo root contains the following block — append it if missing (do **not** duplicate existing lines):
+
+   ```gitignore
+   # Papers: large binaries & mineru outputs — tracked via papers/PAPERS.md
+   papers/**/*.pdf
+   papers/**/images/
+   papers/**/*_content_list.json
+   papers/**/*_layout.pdf
+   papers/**/*_middle.json
+   papers/**/*_model.json
+   papers/**/*_origin.pdf
+   papers/**/*_spans.pdf
+   ```
+
+   Keep `papers/**/*.md` **tracked** — the parsed markdown is small and useful in-repo.
+3. Verify: `git check-ignore -v papers/<ID>/<ID>.pdf` should report the rule matched.
+
+## Step 8 — Update papers/PAPERS.md
+
+Because PDFs and figures are gitignored, `papers/PAPERS.md` is the **single source of truth** recording what's been fetched, where it came from, and how to re-fetch it.
+
+1. If `papers/PAPERS.md` does not exist, create it using the template below.
+2. Append a new entry for this paper. If an entry with the same Paper-ID already exists, update it rather than duplicating.
+3. Keep entries sorted alphabetically by Paper-ID.
+
+### PAPERS.md template
+
+````markdown
+# Papers Index
+
+This directory stores parsed academic papers. Large files (PDFs, figure images, mineru intermediates) are gitignored — only the parsed `.md` is tracked. Use this index to know which papers have been fetched and how to re-download them.
+
+Re-fetch any paper with the `fetching-papers` skill using its source URL below.
+
+---
+
+## <Paper-ID>
+
+- **Title:** <full paper title>
+- **Authors:** <Author1, Author2, et al.>
+- **Year / Venue:** <e.g., 2024 / CVPR>
+- **Source:** <arXiv | HuggingFace | OpenReview | CVF | ACL | DOI>
+- **Source URL:** <canonical landing page, e.g., https://arxiv.org/abs/2401.12345>
+- **PDF URL:** <direct PDF link used to download>
+- **arXiv ID / DOI:** <id, if applicable>
+- **Local path:** `papers/<Paper-ID>/<Paper-ID>/<Paper-ID>.md`
+- **Related code dir:** `<./code-dir/>` or `—`
+- **Fetched:** <YYYY-MM-DD>
+- **Parser:** mineru <version> (backend: `pipeline` | `vlm-transformers`)
+- **Summary:** <1–3 sentence TL;DR — what the paper proposes and why this project cares>
+- **Tags:** `<tag1>`, `<tag2>`  *(e.g., `rgb2ir`, `diffusion`, `dataset`)*
+
+---
+````
+
+### Example filled entry
+
+```markdown
+## DiffV2IR
+
+- **Title:** DiffV2IR: Visible-to-Infrared Image Translation via Diffusion Models
+- **Authors:** Jane Doe, John Smith, et al.
+- **Year / Venue:** 2024 / arXiv preprint
+- **Source:** arXiv
+- **Source URL:** https://arxiv.org/abs/2403.12345
+- **PDF URL:** https://arxiv.org/pdf/2403.12345.pdf
+- **arXiv ID / DOI:** 2403.12345
+- **Local path:** `papers/DiffV2IR/DiffV2IR/DiffV2IR.md`
+- **Related code dir:** `./DiffV2IR/`
+- **Fetched:** 2026-04-22
+- **Parser:** mineru 1.x (backend: pipeline)
+- **Summary:** Proposes a diffusion-based pipeline for translating visible-spectrum images to infrared, conditioning on structural edges to preserve thermal-consistent geometry.
+- **Tags:** `rgb2ir`, `diffusion`, `image-translation`
+```
+
 ## Final layout
 
 ```
 papers/
+  PAPERS.md              ← tracked; index of all fetched papers
   <ID>/
-    <ID>.pdf
+    <ID>.pdf             ← gitignored
     <ID>/
-      <ID>.md
-      images/
-      <ID>_content_list.json
-      <ID>_layout.pdf   (optional debug)
+      <ID>.md            ← tracked
+      images/            ← gitignored
+      <ID>_content_list.json  ← gitignored
+      <ID>_layout.pdf    ← gitignored (optional debug)
 ```
 
 ## Common Mistakes
@@ -141,6 +224,9 @@ papers/
 | Guessing arXiv IDs | If no local citation found, ask the user for the URL |
 | `pip install mineru` | Use `uv tool install` or `uv run --with` |
 | Declaring done without reading the .md | Always verify title/abstract |
+| Committing PDFs / figures to git | Add the `papers/**/*.pdf` etc. block to `.gitignore` (Step 7) |
+| Skipping `PAPERS.md` update | Without it, re-fetch info is lost since binaries are gitignored |
+| Duplicating a `PAPERS.md` entry on re-fetch | Update the existing entry in place |
 
 ## Red Flags — STOP
 
@@ -149,5 +235,7 @@ papers/
 - About to guess an arXiv ID without asking
 - About to fall back to a non-mineru parser silently
 - About to create a new venv without consulting `python_environment.md`
+- About to `git add` a PDF or a `papers/<ID>/<ID>/images/` dir
+- About to mark the task complete without updating `papers/PAPERS.md`
 
 All of these mean: stop, re-read Steps 1 and 3.
