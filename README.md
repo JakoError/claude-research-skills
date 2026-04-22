@@ -10,22 +10,32 @@ A collection of [Claude Code](https://claude.com/claude-code) skills for researc
 
 ## Install
 
-Clone with submodules:
+Clone with submodules, then copy each skill into your Claude skills folder.
 
 ```bash
 git clone --recurse-submodules https://github.com/JakoError/claude-research-skills.git
+cd claude-research-skills
 ```
 
-Symlink (or copy) each skill into `~/.claude/skills/`:
+**Claude Code** (user-level skills, `~/.claude/skills/`):
 
 ```bash
-ln -s "$PWD/claude-research-skills/skills/docker-split-service"   ~/.claude/skills/docker-split-service
-ln -s "$PWD/claude-research-skills/skills/fetching-papers"        ~/.claude/skills/fetching-papers
-ln -s "$PWD/claude-research-skills/skills/research-sandbox"       ~/.claude/skills/research-sandbox
+cp -r skills/* ~/.claude/skills/
 ```
 
-## Updating the submodule
+**Claude Agent SDK** (project-level skills, `./.claude/skills/`):
 
 ```bash
-git submodule update --remote skills/research-sandbox
+mkdir -p /path/to/your/project/.claude/skills
+cp -r skills/* /path/to/your/project/.claude/skills/
+```
+
+## Updating
+
+Pull the latest skills and submodule commits:
+
+```bash
+git pull
+git submodule update --remote
+cp -r skills/* ~/.claude/skills/   # re-copy to refresh
 ```
