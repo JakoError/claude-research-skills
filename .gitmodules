@@ -1,0 +1,3 @@
+[submodule "skills/research-sandbox"]
+	path = skills/research-sandbox
+	url = https://github.com/JakoError/claude-research-sandbox.git
