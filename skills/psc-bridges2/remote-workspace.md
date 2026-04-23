@@ -13,7 +13,7 @@ This prevents the failure mode where the agent guesses a plausible-looking remot
 2. Edit `.psc-config` — at minimum set `PSC_USER` and `PSC_WORKSPACE`. Example:
    ```
    PSC_USER=<psc-user>
-   PSC_WORKSPACE=/jet/home/<psc-user>/project/projects/skeleton/<project-slug>
+   PSC_WORKSPACE=/jet/home/<psc-user>/project/projects/<project-slug>
    PSC_SSH_KEY=~/.ssh/<psc-key>
    PSC_ALLOCATION=<allocation-id>
    ```
@@ -31,7 +31,7 @@ This prevents the failure mode where the agent guesses a plausible-looking remot
 |---|---|
 | `PSC_WORKSPACE` must be absolute | `~/foo`, `project/foo`, empty |
 | Must live under `/jet/home/<PSC_USER>/` or `/ocean/projects/<grp>/<PSC_USER>/` | `/tmp/x`, `/jet/home/someoneelse/...` |
-| Must be at least one level DEEPER than the user's root | `/jet/home/<psc-user>`, `/ocean/projects/<allocation-id>/<psc-user>` |
+| Must be at least one level DEEPER than the user's root | `/jet/home/<psc-user>`, `/ocean/projects/<grp>/<psc-user>` |
 | `/ocean/projects/<grp>/<user>` path must include `<user>` as the 2nd component and a 3rd-level subdir | `/ocean/projects/<allocation-id>/shared/foo` — wrong user slot |
 | `LOCAL_WORKSPACE` must not be `/` or `$HOME` | `~`, `/` |
 
