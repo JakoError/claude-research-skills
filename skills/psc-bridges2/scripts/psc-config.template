@@ -1,0 +1,31 @@
+# PSC Bridges-2 remote workspace config.
+#
+# This file PINS where on PSC the project syncs to. The sync/submit scripts
+# in this directory refuse to run without it, and refuse to run if the
+# workspace path looks unsafe. Copy to `.psc-config` in your project root
+# and fill in. This file is gitignored by convention — DO NOT COMMIT filled
+# values if they include anything sensitive.
+#
+# Required:
+PSC_USER=
+PSC_WORKSPACE=
+# PSC_WORKSPACE must be an ABSOLUTE path under one of:
+#   /jet/home/<user>/...        (at least 2 levels deeper than /jet/home/<user>)
+#   /ocean/projects/<grp>/<user>/...  (at least 1 level deeper than /ocean/projects/<grp>/<user>)
+# Pointing at $HOME, a bare allocation root, or another user's dir is rejected.
+
+# Optional:
+PSC_LOGIN_HOST=bridges2.psc.edu
+PSC_DATA_HOST=data.bridges2.psc.edu
+PSC_SSH_KEY=                         # e.g. ~/.ssh/id_rsa_psc — blank uses default key
+PSC_ALLOCATION=                      # e.g. <allocation-id> — needed for sbatch -A
+
+# Local side. LOCAL_WORKSPACE is the directory rsync reads from / writes to.
+# Defaults to the directory containing this .psc-config. Must NOT be $HOME or /.
+LOCAL_WORKSPACE=
+
+# Extra rsync excludes (one per line, shell-glob patterns). The scripts
+# always exclude: .git __pycache__ .idea .vscode .cursor *cache* node_modules
+# .venv venv .env .env.* *.sif checkpoints/ data/ logs/ results/
+# Add project-specific extras here if needed.
+EXTRA_EXCLUDES=()

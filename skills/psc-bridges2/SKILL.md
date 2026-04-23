@@ -1,12 +1,12 @@
 ---
 name: psc-bridges2
-description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers (including Docker→SIF conversion via bundled scripts/singularity_pull_docker_local.sh + scripts/start_sif.sh), Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
+description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers (Docker→SIF via bundled scripts/singularity_pull_docker_local.sh + scripts/start_sif.sh), pinned-workspace rsync bridge via scripts/sync_local_to_psc.sh + scripts/sync_psc_to_local.sh (driven by .psc-config, safety-checked), Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
 type: reference
 ---
 
 # PSC Bridges-2 User Guide
 
-Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 system. See `partitions.md`, `job-scripts.md`, `filesystems.md`, `airlab-fast-setup.md` (AirLab-specific workflow: Singularity, ROBO/H100, Rerun, `<allocation-id>`), and `docker-to-singularity.md` (running Docker images on PSC via the bundled `scripts/singularity_pull_docker_local.sh` + `scripts/start_sif.sh`).
+Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 system. See `partitions.md`, `job-scripts.md`, `filesystems.md`, `airlab-fast-setup.md` (AirLab-specific workflow: Singularity, ROBO/H100, Rerun, `<allocation-id>`), `docker-to-singularity.md` (running Docker images on PSC via the bundled `scripts/singularity_pull_docker_local.sh` + `scripts/start_sif.sh`), and `remote-workspace.md` (pinned rsync bridge: `.psc-config` + `scripts/sync_local_to_psc.sh` / `scripts/sync_psc_to_local.sh`, with mandatory workspace safety checks).
 
 ## Connecting
 
@@ -110,6 +110,8 @@ sftp user@data.bridges2.psc.edu
 ```
 
 **Globus:** endpoint `PSC Bridges-2 /ocean and /jet filesystems`. Best for large/resumable transfers.
+
+**Pinned-workspace rsync (recommended for project code):** use the bundled `scripts/sync_local_to_psc.sh` / `scripts/sync_psc_to_local.sh`. Both read `.psc-config` in the project root, which fixes the remote path ONCE (`PSC_WORKSPACE=...`); the loader rejects unsafe destinations ($HOME roots, allocation roots, other users' trees). Agents must NEVER construct a remote path by hand — use these scripts, never pass a remote arg, and fix `.psc-config` if a check fails. Full rules and exclude list in `remote-workspace.md`.
 
 ## Software
 
