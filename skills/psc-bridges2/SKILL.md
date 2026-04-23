@@ -1,12 +1,12 @@
 ---
 name: psc-bridges2
-description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers, Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
+description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers (including Docker→SIF conversion via bundled scripts/singularity_pull_docker_local.sh + scripts/start_sif.sh), Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
 type: reference
 ---
 
 # PSC Bridges-2 User Guide
 
-Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 system. See `partitions.md`, `job-scripts.md`, `filesystems.md`, and `airlab-fast-setup.md` (AirLab-specific workflow: Singularity, ROBO/H100, Rerun, `<allocation-id>`).
+Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 system. See `partitions.md`, `job-scripts.md`, `filesystems.md`, `airlab-fast-setup.md` (AirLab-specific workflow: Singularity, ROBO/H100, Rerun, `<allocation-id>`), and `docker-to-singularity.md` (running Docker images on PSC via the bundled `scripts/singularity_pull_docker_local.sh` + `scripts/start_sif.sh`).
 
 ## Connecting
 
@@ -117,6 +117,7 @@ sftp user@data.bridges2.psc.edu
 - Singularity/Apptainer containers supported; `singularity exec --nv -B /ocean:/ocean <img.sif> <cmd>`
 - Pre-built NGC images at `/ocean/containers/ngc`
 - Set `APPTAINER_CACHEDIR` / `APPTAINER_TMPDIR` under `$PROJECT` before pulling/building
+- **Docker → Singularity bridge:** the skill ships two helper scripts at `scripts/singularity_pull_docker_local.sh` (pull a Docker image on an allocated node using `$LOCAL` scratch, then save the `.sif` to the working dir) and `scripts/start_sif.sh` (fuzzy-match a `.sif` by keyword and start/exec it with `--nv` + `/local` bind). Full usage in `docker-to-singularity.md`. For a bare Docker-on-PSC workflow, copy those two scripts to the cluster — nothing else is required.
 - Install requests: `help@psc.edu`
 
 For lab-standard container workflows, tmux-pinning to a login node, job arrays, and Rerun visualization, see `airlab-fast-setup.md`.
