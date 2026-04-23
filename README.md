@@ -60,14 +60,22 @@ To update: `git pull && git submodule update --remote && cp -r skills/* ~/.claud
 
 ### Method 3 — Symlink (live edits)
 
-Same as Method 2, but symlink instead of copy so `git pull` instantly updates loaded skills:
+Same as Method 2, but symlink instead of copy so `git pull` instantly updates loaded skills. Use the bundled installer:
 
 ```bash
-git clone --recurse-submodules https://github.com/JakoError/claude-research-skills.git ~/code/claude-research-skills
-cd ~/.claude/skills
-for s in ~/code/claude-research-skills/skills/*/; do
-  ln -s "$s" "$(basename "$s")"
-done
+git clone --recurse-submodules https://github.com/JakoError/claude-research-skills.git ~/.claude/skills/claude-research-skills
+cd ~/.claude/skills/claude-research-skills
+./install-symlinks.sh                 # defaults to parent dir (~/.claude/skills)
+# or: ./install-symlinks.sh ~/some/other/skills/dir
 ```
+
+**Windows (PowerShell):**
+
+```powershell
+pwsh -File install-symlinks.ps1
+# or: pwsh -File install-symlinks.ps1 -Target ~/.claude/skills
+```
+
+> Windows symlinks require Developer Mode (Settings → Privacy & Security → For Developers) or an elevated PowerShell.
 
 > Note: don't combine Method 1 with Method 2/3 — duplicate skills will load twice.
