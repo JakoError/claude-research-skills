@@ -8,7 +8,7 @@
         "source": "github",
         "repo": "JakoError/claude-research-skills"
       },
-      "description": "Research workflow skills (sandbox, papers, docker-split)"
+      "description": "Research workflow skills (sandbox, papers, docker-split, psc-bridges2 with Docker→Singularity + pinned-workspace rsync bridge)"
     }
   ]
 }
