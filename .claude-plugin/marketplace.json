@@ -4,7 +4,10 @@
   "plugins": [
     {
       "name": "research-skills",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "JakoError/claude-research-skills"
+      },
       "description": "Research workflow skills (sandbox, papers, docker-split)"
     }
   ]
