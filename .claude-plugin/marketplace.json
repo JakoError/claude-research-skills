@@ -1,0 +1,11 @@
+{
+  "name": "jakoerror-research",
+  "owner": { "name": "JakoError" },
+  "plugins": [
+    {
+      "name": "research-skills",
+      "source": ".",
+      "description": "Research workflow skills (sandbox, papers, docker-split)"
+    }
+  ]
+}
