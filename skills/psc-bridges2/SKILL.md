@@ -112,7 +112,7 @@ How to do it:
 Rules / cautions:
 - **Cancel PD duplicates the instant one starts running** — otherwise multiple copies will run and burn SUs on every allocation.
 - Only race allocations that are actually valid for the work; don't submit to an EM allocation for a GPU job.
-- ROBO (H100) charges 2 SU/GPU-hr — race it only when H100 is actually needed.
+- Every job consumes SUs — be thoughtful and make sure the code and submission script are checked and good to run before launching.
 - Don't race more than ~3–4 copies; beyond that the SU-loss risk from a missed cancel outweighs the queue savings.
 - For very short jobs (< 15 min) skip racing; overhead of submit+cancel isn't worth it.
 
