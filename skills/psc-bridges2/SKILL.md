@@ -1,6 +1,6 @@
 ---
 name: psc-bridges2
-description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers (Docker→SIF via bundled scripts/singularity_pull_docker_local.sh + scripts/start_sif.sh), pinned-workspace rsync bridge via scripts/sync_local_to_psc.sh + scripts/sync_psc_to_local.sh (driven by .psc-config, safety-checked), Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
+description: Use when working on PSC Bridges-2 — SSH/login to bridges2.psc.edu, SLURM job submission (sbatch, srun, interact), partitions (RM, RM-shared, RM-512, EM, GPU, GPU-shared, ROBO H100), GPU types (h100-80, l40s-48, v100-32, v100-16), allocations/SU accounting, parallel-allocation racing to cut queue wait (submit to multiple allocations/partitions, cancel losers on first start), Ocean/jet filesystems, $LOCAL/$RAMDISK, modules, Singularity/Apptainer containers (Docker→SIF via bundled scripts/singularity_pull_docker_local.sh + scripts/start_sif.sh), pinned-workspace rsync bridge via scripts/sync_local_to_psc.sh + scripts/sync_psc_to_local.sh (driven by .psc-config, safety-checked), Rerun port-forwarding, AirLab (<allocation-id>) workflows, or data transfers via data.bridges2.psc.edu.
 type: reference
 ---
 
@@ -83,6 +83,37 @@ Output: `slurm-<jobid>.out`. States: PD (pending), R (running), CA (cancelled), 
 Interactive uses `--gres=gpu:<type>:<n>`; batch uses `--gpus=<type>:<n>` (multiple of 8 on GPU full-node).
 
 See `job-scripts.md` for ready-to-adapt templates (RM, RM-shared, EM, GPU, GPU-shared, MPI, OpenMP).
+
+## Parallel Allocation / Partition Racing (reduce queue wait)
+
+Queues on Bridges-2 vary dramatically by allocation and partition. A single `-A <alloc>` submission can sit in PD for hours while another allocation/partition would start in minutes. When wait time matters, **submit the same job to multiple allocations or compatible partitions in parallel and cancel the losers once one starts.**
+
+When to use:
+- You have access to 2+ allocations (check with `projects`), or the job can run on multiple partitions (e.g. GPU-shared vs ROBO for H100 work).
+- A first submission has been PD for noticeably longer than the job's own runtime, or longer than ~15–30 min.
+- The job is idempotent from a clean start (no side effects from duplicate starts before cancel).
+
+How to do it:
+1. Submit the same script to each viable (allocation, partition) pair. Tag each with a recognizable `--job-name` so you can find them:
+   ```bash
+   sbatch -A <alloc-A> -p GPU-shared --gres=gpu:h100-80:1 -J race_h100_A job.sh
+   sbatch -A <alloc-B> -p GPU-shared --gres=gpu:h100-80:1 -J race_h100_B job.sh
+   sbatch -A <alloc-B> -p ROBO     --gres=h100:1          -J race_h100_R job.sh
+   ```
+2. Poll: `squeue -u $USER -n race_h100_A,race_h100_B,race_h100_R`.
+3. As soon as **one** enters state `R`, cancel the rest:
+   ```bash
+   RUNNING=$(squeue -u $USER -n race_h100_A,race_h100_B,race_h100_R -h -t R -o %i | head -1)
+   squeue -u $USER -n race_h100_A,race_h100_B,race_h100_R -h -t PD -o %i | xargs -r scancel
+   ```
+4. Record which (allocation, partition) won so later jobs can start there directly.
+
+Rules / cautions:
+- **Cancel PD duplicates the instant one starts running** — otherwise multiple copies will run and burn SUs on every allocation.
+- Only race allocations that are actually valid for the work; don't submit to an EM allocation for a GPU job.
+- ROBO (H100) charges 2 SU/GPU-hr — race it only when H100 is actually needed, or it will be the most expensive winner.
+- Don't race more than ~3–4 copies; beyond that the SU-loss risk from a missed cancel outweighs the queue savings.
+- For very short jobs (< 15 min) skip racing; overhead of submit+cancel isn't worth it.
 
 ## Compilers and MPI
 
