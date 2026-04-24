@@ -28,6 +28,7 @@ Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 s
 - GPU V100 / L40S: 1 GPU-hour = 1 SU (8 SUs/node-hour)
 - GPU H100: 1 GPU-hour = 2 SUs (16 SUs/node-hour)
 - RM (full) always charges all 128 cores regardless of use
+- ROBO allocation balance shown by `projects` is always negative (e.g. `-168,249 / 0 SU`) — this is normal and the allocation remains usable
 
 ## Filesystems
 
@@ -111,7 +112,7 @@ How to do it:
 Rules / cautions:
 - **Cancel PD duplicates the instant one starts running** — otherwise multiple copies will run and burn SUs on every allocation.
 - Only race allocations that are actually valid for the work; don't submit to an EM allocation for a GPU job.
-- ROBO (H100) charges 2 SU/GPU-hr — race it only when H100 is actually needed, or it will be the most expensive winner.
+- ROBO (H100) charges 2 SU/GPU-hr — race it only when H100 is actually needed.
 - Don't race more than ~3–4 copies; beyond that the SU-loss risk from a missed cancel outweighs the queue savings.
 - For very short jobs (< 15 min) skip racing; overhead of submit+cancel isn't worth it.
 

@@ -125,7 +125,7 @@ sbatch -p ROBO --comment="<ORACLE_STRING>" -n 10 --gres=h100:1 \
   -t 48:00:00 <job>.job -o /path/to/<out>.out
 ```
 
-Use ROBO only for polished code — it's expensive.
+Run tested and polished code on all jobs.
 
 ## Interactive GPU Workflow with tmux
 
