@@ -71,6 +71,13 @@ interact -p GPU-shared --gres=gpu:v100-32:1 -t 2:00:00
 
 Options: `-p`, `-t`, `-N`, `--ntasks-per-node`, `--gres=gpu:<type>:<n>`, `-A`.
 
+**Important constraints when using `interact`:**
+- **Max wall time is 8 hours** (`-t 8:00:00`), regardless of the partition's batch limit (RM/RM-shared 72h and GPU/GPU-shared 48h apply only to `sbatch`). Default is 60 min, and idle sessions are auto-logged-out after 30 min — always pass `-t` explicitly.
+- EM partition does **not** allow interactive sessions — use `sbatch` for EM.
+- **Effectively one active `interact` session per user** (observed: a second `interact` while one is already running will queue behind it; not explicitly documented in the PSC user guide). Before launching, check `squeue -u $USER` for an existing interactive job and reuse it (re-attach via the original terminal / tmux) instead of spawning another.
+- Even for longer jobs, `interact` (up to 8h) is often the right tool — but if the work needs >8h or must survive disconnects, use `sbatch`.
+- Wrap `interact` in `tmux`/`screen` on the login node so SSH drops don't kill the session.
+
 ## Batch Jobs
 
 ```bash
@@ -111,10 +118,12 @@ How to do it:
 
 Rules / cautions:
 - **Cancel PD duplicates the instant one starts running** — otherwise multiple copies will run and burn SUs on every allocation.
+- **Be patient — do NOT cancel siblings just because waiting feels long.** The cancel trigger is "another sibling entered state `R`," not "I've been waiting a few minutes." Racing only works if every sibling stays alive until exactly one starts; killing PD jobs early to "settle" on one defeats the purpose, since the one you kept may itself be the slowest. If no sibling has started yet, keep waiting.
+- **Prefer `interact` for small / short / exploratory tasks.** A single `interact -p RM-shared ...` or `interact -p GPU-shared --gres=gpu:<type>:<n> ...` session is usually better than batch racing for debug work, quick checks, or anything under ~15–30 min — lower overhead, no duplicate-job SU risk, and the user can drive it directly. Reach for racing only when the job is long enough that queue wait actually dominates.
 - Only race allocations that are actually valid for the work; don't submit to an EM allocation for a GPU job.
 - Every job consumes SUs — be thoughtful and make sure the code and submission script are checked and good to run before launching.
 - Don't race more than ~3–4 copies; beyond that the SU-loss risk from a missed cancel outweighs the queue savings.
-- For very short jobs (< 15 min) skip racing; overhead of submit+cancel isn't worth it.
+- For very short jobs (< 15 min) skip racing; overhead of submit+cancel isn't worth it — use `interact` instead.
 
 ## Compilers and MPI
 
