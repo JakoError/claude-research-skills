@@ -41,6 +41,18 @@ Reference for running work on the Pittsburgh Supercomputing Center's Bridges-2 s
 
 Exceeding $PROJECT quota blocks job submission.
 
+## Path Discipline (REQUIRED)
+
+**Ask the user to indicate the workspace** — an absolute Ocean path under `/ocean/projects/<group>/<PSC-user>/...` — before doing anything on PSC. Do not guess. If `.psc-config` exists locally, read `PSC_WORKSPACE` and confirm with the user.
+
+Allowed paths:
+
+- **Login nodes:** the pinned Ocean workspace only. Avoid `~` / `$HOME` whenever possible (only for things that belong there, e.g. SSH keys, dotfiles, module config).
+- **Compute nodes (`interact` / `sbatch`):** the pinned Ocean workspace and `$LOCAL`. Nothing else.
+- **`/tmp` is never allowed**, on any node. If a tool defaults there, redirect it (`TMPDIR`, `APPTAINER_TMPDIR`, cache flags).
+
+If the workspace has not been specified yet, **stop and ask** — don't `cd`, `mkdir`, download, `singularity pull`, or `sbatch` first.
+
 ## Modules
 
 - `module avail` — list available
